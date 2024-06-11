@@ -614,7 +614,7 @@ namespace platf {
         for (auto &entry : fs::directory_iterator { card_dir }) {
           auto file = entry.path().filename();
 
-          auto filestring = file.generic_u8string();
+          auto filestring = file.generic_string();
           if (filestring.size() < 4 || std::string_view { filestring }.substr(0, 4) != "card"sv) {
             continue;
           }
@@ -1193,17 +1193,22 @@ namespace platf {
       capture(const push_captured_image_cb_t &push_captured_image_cb, const pull_free_image_cb_t &pull_free_image_cb, bool *cursor) override {
         auto next_frame = std::chrono::steady_clock::now();
 
+        sleep_overshoot_tracker.reset();
+
         while (true) {
           auto now = std::chrono::steady_clock::now();
 
           if (next_frame > now) {
-            std::this_thread::sleep_for((next_frame - now) / 3 * 2);
+            std::this_thread::sleep_for(next_frame - now);
           }
-          while (next_frame > now) {
-            std::this_thread::sleep_for(1ns);
-            now = std::chrono::steady_clock::now();
+          now = std::chrono::steady_clock::now();
+          std::chrono::nanoseconds overshoot_ns = now - next_frame;
+          log_sleep_overshoot(overshoot_ns);
+
+          next_frame += delay;
+          if (next_frame < now) {  // some major slowdown happened; we couldn't keep up
+            next_frame = now + delay;
           }
-          next_frame = now + delay;
 
           std::shared_ptr<platf::img_t> img_out;
           auto status = snapshot(pull_free_image_cb, img_out, 1000ms, *cursor);
@@ -1412,17 +1417,22 @@ namespace platf {
       capture(const push_captured_image_cb_t &push_captured_image_cb, const pull_free_image_cb_t &pull_free_image_cb, bool *cursor) {
         auto next_frame = std::chrono::steady_clock::now();
 
+        sleep_overshoot_tracker.reset();
+
         while (true) {
           auto now = std::chrono::steady_clock::now();
 
           if (next_frame > now) {
-            std::this_thread::sleep_for((next_frame - now) / 3 * 2);
+            std::this_thread::sleep_for(next_frame - now);
           }
-          while (next_frame > now) {
-            std::this_thread::sleep_for(1ns);
-            now = std::chrono::steady_clock::now();
+          now = std::chrono::steady_clock::now();
+          std::chrono::nanoseconds overshoot_ns = now - next_frame;
+          log_sleep_overshoot(overshoot_ns);
+
+          next_frame += delay;
+          if (next_frame < now) {  // some major slowdown happened; we couldn't keep up
+            next_frame = now + delay;
           }
-          next_frame = now + delay;
 
           std::shared_ptr<platf::img_t> img_out;
           auto status = snapshot(pull_free_image_cb, img_out, 1000ms, *cursor);
@@ -1631,7 +1641,7 @@ namespace platf {
     for (auto &entry : fs::directory_iterator { card_dir }) {
       auto file = entry.path().filename();
 
-      auto filestring = file.generic_u8string();
+      auto filestring = file.generic_string();
       if (std::string_view { filestring }.substr(0, 4) != "card"sv) {
         continue;
       }
@@ -1675,7 +1685,9 @@ namespace platf {
         if (!fb->handles[0]) {
           BOOST_LOG(error) << "Couldn't get handle for DRM Framebuffer ["sv << plane->fb_id << "]: Probably not permitted"sv;
           BOOST_LOG((window_system != window_system_e::X11 || config::video.capture == "kms") ? fatal : error)
-            << "You must run [sudo setcap cap_sys_admin+p $(readlink -f sunshine)] for KMS display capture to work!"sv;
+            << "You must run [sudo setcap cap_sys_admin+p $(readlink -f $(which sunshine))] for KMS display capture to work!\n"sv
+            << "If you installed from AppImage or Flatpak, please refer to the official documentation:\n"sv
+            << "https://docs.lizardbyte.dev/projects/sunshine/en/latest/about/setup.html#install"sv;
           break;
         }
 

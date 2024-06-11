@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="auto">
 
 <head>
       <%- header %>
@@ -326,13 +326,13 @@
             </tr>
           </table>
           <div class="form-text" v-if="platform === 'windows'"><b>{{ $t('apps.env_qres_example') }}</b>
-            <pre>cmd /C &lt;{{ $t('apps.env_qres_path') }}&gt;\QRes.exe /X:%SUNSHINE_CLIENT_WIDTH% /Y:%SUNSHINE_CLIENT_HEIGHT%</pre>
+            <pre>cmd /C &lt;{{ $t('apps.env_qres_path') }}&gt;\QRes.exe /X:%SUNSHINE_CLIENT_WIDTH% /Y:%SUNSHINE_CLIENT_HEIGHT% /R:%SUNSHINE_CLIENT_FPS%</pre>
           </div>
           <div class="form-text" v-else-if="platform === 'linux'"><b>{{ $t('apps.env_xrandr_example') }}</b>
-            <pre>sh -c "xrandr --output HDMI-1 --mode \"${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT}\" --rate 60"</pre>
+            <pre>sh -c "xrandr --output HDMI-1 --mode \"${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT}\" --rate ${SUNSHINE_CLIENT_FPS}"</pre>
           </div>
           <div class="form-text" v-else-if="platform === 'macos'"><b>{{ $t('apps.env_displayplacer_example') }}</b>
-            <pre>sh -c "displayplacer "id:&lt;screenId&gt; res:${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT} hz:60 scaling:on origin:(0,0) degree:0""</pre>
+            <pre>sh -c "displayplacer "id:&lt;screenId&gt; res:${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT} hz:${SUNSHINE_CLIENT_FPS} scaling:on origin:(0,0) degree:0""</pre>
           </div>
           <div class="form-text"><a
               href="https://docs.lizardbyte.dev/projects/sunshine/en/latest/about/guides/app_examples.html"
@@ -355,10 +355,10 @@
   </div>
 </body>
 <script type="module">
-  import { createApp } from 'vue';
-  import i18n from './locale.js'
+  import { createApp } from 'vue'
+  import { initApp } from './init'
   import Navbar from './Navbar.vue'
-  import {Dropdown} from 'bootstrap'
+  import { Dropdown } from 'bootstrap/dist/js/bootstrap'
 
   const app = createApp({
     components: {
@@ -561,9 +561,5 @@
     }
   });
 
-  //Wait for locale initialization, then render
-  i18n().then(i18n => {
-    app.use(i18n);
-    app.mount('#app');
-  });
+  initApp(app);
 </script>

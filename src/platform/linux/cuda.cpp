@@ -262,7 +262,7 @@ namespace cuda {
       fs::path sysfs_dir { sysfs_path };
       for (auto &entry : fs::directory_iterator { sysfs_dir }) {
         auto file = entry.path().filename();
-        auto filestring = file.generic_u8string();
+        auto filestring = file.generic_string();
         if (std::string_view { filestring }.substr(0, 4) != "card"sv) {
           continue;
         }
@@ -614,6 +614,12 @@ namespace cuda {
       make() {
         NVFBC_CREATE_HANDLE_PARAMS params { NVFBC_CREATE_HANDLE_PARAMS_VER };
 
+        // Set privateData to allow NvFBC on consumer NVIDIA GPUs.
+        // Based on https://github.com/keylase/nvidia-patch/blob/3193b4b1cea91527bf09ea9b8db5aade6a3f3c0a/win/nvfbcwrp/nvfbcwrp_main.cpp#L23-L25 .
+        const unsigned int MAGIC_PRIVATE_DATA[4] = { 0xAEF57AC5, 0x401D1A39, 0x1B856BBE, 0x9ED0CEBA };
+        params.privateData = MAGIC_PRIVATE_DATA;
+        params.privateDataSize = sizeof(MAGIC_PRIVATE_DATA);
+
         handle_t handle;
         auto status = func.nvFBCCreateHandle(&handle.handle, &params);
         if (status) {
@@ -800,16 +806,21 @@ namespace cuda {
           handle.reset();
         });
 
+        sleep_overshoot_tracker.reset();
+
         while (true) {
           auto now = std::chrono::steady_clock::now();
           if (next_frame > now) {
-            std::this_thread::sleep_for((next_frame - now) / 3 * 2);
+            std::this_thread::sleep_for(next_frame - now);
           }
-          while (next_frame > now) {
-            std::this_thread::sleep_for(1ns);
-            now = std::chrono::steady_clock::now();
+          now = std::chrono::steady_clock::now();
+          std::chrono::nanoseconds overshoot_ns = now - next_frame;
+          log_sleep_overshoot(overshoot_ns);
+
+          next_frame += delay;
+          if (next_frame < now) {  // some major slowdown happened; we couldn't keep up
+            next_frame = now + delay;
           }
-          next_frame = now + delay;
 
           std::shared_ptr<platf::img_t> img_out;
           auto status = snapshot(pull_free_image_cb, img_out, 150ms, *cursor);

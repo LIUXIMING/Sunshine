@@ -29,7 +29,7 @@ System Requirements
    "OS", "Windows: 10+ (Windows Server does not support virtual gamepads)"
    "", "macOS: 12+"
    "", "Linux/Debian: 11 (bullseye)"
-   "", "Linux/Fedora: 38+"
+   "", "Linux/Fedora: 39+"
    "", "Linux/Ubuntu: 22.04+ (jammy)"
    "Network", "Host: 5GHz, 802.11ac"
    "", "Client: 5GHz, 802.11ac"
@@ -67,9 +67,9 @@ Integrations
    :alt: GitHub Workflow Status (CI)
    :target: https://github.com/LizardByte/Sunshine/actions/workflows/CI.yml?query=branch%3Amaster
 
-.. image:: https://img.shields.io/github/actions/workflow/status/lizardbyte/sunshine/localize.yml.svg?branch=nightly&label=localize%20build&logo=github&style=for-the-badge
+.. image:: https://img.shields.io/github/actions/workflow/status/lizardbyte/sunshine/localize.yml.svg?branch=master&label=localize%20build&logo=github&style=for-the-badge
    :alt: GitHub Workflow Status (localize)
-   :target: https://github.com/LizardByte/Sunshine/actions/workflows/localize.yml?query=branch%3Anightly
+   :target: https://github.com/LizardByte/Sunshine/actions/workflows/localize.yml?query=branch%3Amaster
 
 .. image:: https://img.shields.io/readthedocs/sunshinestream.svg?label=Docs&style=for-the-badge&logo=readthedocs
    :alt: Read the Docs
@@ -96,7 +96,7 @@ Downloads
    :alt: Docker
    :target: https://hub.docker.com/r/lizardbyte/sunshine
 
-.. image:: https://img.shields.io/badge/dynamic/xml.svg?color=orange&label=Winget&style=for-the-badge&prefix=v&query=%2F%2Ftr%5B%40id%3D%27winget%27%5D%2Ftd%5B3%5D%2Fspan%2Fa&url=https%3A%2F%2Frepology.org%2Fproject%2Fsunshine%2Fversions&logo=microsoft
+.. image:: https://img.shields.io/badge/dynamic/json.svg?color=orange&label=Winget&style=for-the-badge&prefix=v&query=pageProps.app.latestVersion&url=https%3A%2F%2Fwinstall.app%2F_next%2Fdata%2FixSYALJOWdJEOGpVihkFS%2Fapps%2FLizardByte.Sunshine.json&logo=microsoft
    :alt: Winget Version
    :target: https://github.com/microsoft/winget-pkgs/tree/master/manifests/l/LizardByte/Sunshine
 

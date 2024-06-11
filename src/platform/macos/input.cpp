@@ -328,15 +328,12 @@ const KeyCodeMap kKeyCodesMap[] = {
     auto display = macos_input->display;
     auto event = macos_input->mouse_event;
 
-    if (location.x < 0)
-      location.x = 0;
-    if (location.x >= (double) CGDisplayPixelsWide(display))
-      location.x = (double) CGDisplayPixelsWide(display) - 1;
+    // get display bounds for current display
+    CGRect display_bounds = CGDisplayBounds(display);
 
-    if (location.y < 0)
-      location.y = 0;
-    if (location.y >= (double) CGDisplayPixelsHigh(display))
-      location.y = (double) CGDisplayPixelsHigh(display) - 1;
+    // limit mouse to current display bounds
+    location.x = std::clamp(location.x, display_bounds.origin.x, display_bounds.origin.x + display_bounds.size.width - 1);
+    location.y = std::clamp(location.y, display_bounds.origin.y, display_bounds.origin.y + display_bounds.size.height - 1);
 
     CGEventSetType(event, type);
     CGEventSetLocation(event, location);
@@ -379,10 +376,15 @@ const KeyCodeMap kKeyCodesMap[] = {
 
   void
   abs_mouse(input_t &input, const touch_port_t &touch_port, float x, float y) {
-    auto scaling = ((macos_input_t *) input.get())->displayScaling;
+    auto macos_input = static_cast<macos_input_t *>(input.get());
+    auto scaling = macos_input->displayScaling;
+    auto display = macos_input->display;
 
     CGPoint location = CGPointMake(x * scaling, y * scaling);
-
+    CGRect display_bounds = CGDisplayBounds(display);
+    // in order to get the correct mouse location for capturing display , we need to add the display bounds to the location
+    location.x += display_bounds.origin.x;
+    location.y += display_bounds.origin.y;
     post_mouse(input, kCGMouseButtonLeft, event_type_mouse(input), location, 0);
   }
 
@@ -509,8 +511,27 @@ const KeyCodeMap kKeyCodesMap[] = {
 
     auto macos_input = (macos_input_t *) result.get();
 
-    // If we don't use the main display in the future, this has to be adapted
+    // Default to main display
     macos_input->display = CGMainDisplayID();
+
+    auto output_name = config::video.output_name;
+    // If output_name is set, try to find the display with that display id
+    if (!output_name.empty()) {
+      uint32_t max_display = 32;
+      uint32_t display_count;
+      CGDirectDisplayID displays[max_display];
+      if (CGGetActiveDisplayList(max_display, displays, &display_count) != kCGErrorSuccess) {
+        BOOST_LOG(error) << "Unable to get active display list , error: "sv << std::endl;
+      }
+      else {
+        for (int i = 0; i < display_count; i++) {
+          CGDirectDisplayID display_id = displays[i];
+          if (display_id == std::atoi(output_name.c_str())) {
+            macos_input->display = display_id;
+          }
+        }
+      }
+    }
 
     // Input coordinates are based on the virtual resolution not the physical, so we need the scaling factor
     CGDisplayModeRef mode = CGDisplayCopyDisplayMode(macos_input->display);

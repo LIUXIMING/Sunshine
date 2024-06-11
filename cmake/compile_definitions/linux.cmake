@@ -199,13 +199,13 @@ endif()
 
 # tray icon
 if(${SUNSHINE_ENABLE_TRAY})
-    pkg_check_modules(APPINDICATOR appindicator3-0.1)
+    pkg_check_modules(APPINDICATOR ayatana-appindicator3-0.1)
     if(APPINDICATOR_FOUND)
-        list(APPEND SUNSHINE_DEFINITIONS TRAY_LEGACY_APPINDICATOR=1)
+        list(APPEND SUNSHINE_DEFINITIONS TRAY_AYATANA_APPINDICATOR=1)
     else()
-        pkg_check_modules(APPINDICATOR ayatana-appindicator3-0.1)
+        pkg_check_modules(APPINDICATOR appindicator3-0.1)
         if(APPINDICATOR_FOUND)
-            list(APPEND SUNSHINE_DEFINITIONS TRAY_AYATANA_APPINDICATOR=1)
+            list(APPEND SUNSHINE_DEFINITIONS TRAY_LEGACY_APPINDICATOR=1)
         endif ()
     endif()
     pkg_check_modules(LIBNOTIFY libnotify)
@@ -218,7 +218,7 @@ if(${SUNSHINE_ENABLE_TRAY})
         include_directories(SYSTEM ${APPINDICATOR_INCLUDE_DIRS} ${LIBNOTIFY_INCLUDE_DIRS})
         link_directories(${APPINDICATOR_LIBRARY_DIRS} ${LIBNOTIFY_LIBRARY_DIRS})
 
-        list(APPEND PLATFORM_TARGET_FILES "${CMAKE_SOURCE_DIR}/third-party/tray/tray_linux.c")
+        list(APPEND PLATFORM_TARGET_FILES "${CMAKE_SOURCE_DIR}/third-party/tray/src/tray_linux.c")
         list(APPEND SUNSHINE_EXTERNAL_LIBRARIES ${APPINDICATOR_LIBRARIES} ${LIBNOTIFY_LIBRARIES})
     endif()
 else()
@@ -248,7 +248,6 @@ list(APPEND PLATFORM_TARGET_FILES
 list(APPEND PLATFORM_LIBRARIES
         Boost::dynamic_linking
         dl
-        numa
         pulse
         pulse-simple)
 

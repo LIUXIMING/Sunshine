@@ -15,7 +15,6 @@ Install Requirements
       sudo apt update && sudo apt install \
           build-essential \
           cmake \
-          libavdevice-dev \
           libayatana-appindicator3-dev \
           libboost-filesystem-dev \
           libboost-locale-dev \
@@ -47,7 +46,7 @@ Install Requirements
           nvidia-cuda-dev \  # Cuda, NvFBC
           nvidia-cuda-toolkit  # Cuda, NvFBC
 
-Fedora 38, 39
+Fedora 39, 40
 ^^^^^^^^^^^^^
 
 Install Requirements
@@ -98,7 +97,6 @@ Install Requirements
           build-essential \
           cmake \
           libappindicator3-dev \
-          libavdevice-dev \
           libboost-filesystem-dev \
           libboost-locale-dev \
           libboost-log-dev \
@@ -140,7 +138,6 @@ Install Requirements
           gcc-11 \
           g++-11 \
           libappindicator3-dev \
-          libavdevice-dev \
           libboost-filesystem-dev \
           libboost-locale-dev \
           libboost-log-dev \
